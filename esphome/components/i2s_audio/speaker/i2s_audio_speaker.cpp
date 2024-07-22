@@ -63,9 +63,11 @@ void I2SAudioSpeaker::player_task(void *params) {
   event.type = TaskEventType::STARTING;
   xQueueSend(this_speaker->event_queue_, &event, portMAX_DELAY);
 
+  ESP_LOGD(TAG, "Setting sample rate to %d", this_speaker->sample_rate_);
+
   i2s_driver_config_t config = {
       .mode = (i2s_mode_t) (I2S_MODE_MASTER | I2S_MODE_TX),
-      .sample_rate = 16000,
+      .sample_rate = this_speaker->sample_rate_,
       .bits_per_sample = I2S_BITS_PER_SAMPLE_16BIT,
       .channel_format = I2S_CHANNEL_FMT_RIGHT_LEFT,
       .communication_format = I2S_COMM_FORMAT_STAND_I2S,
@@ -86,6 +88,7 @@ void I2SAudioSpeaker::player_task(void *params) {
 
   esp_err_t err = i2s_driver_install(this_speaker->parent_->get_port(), &config, 0, nullptr);
   if (err != ESP_OK) {
+    ESP_LOGE(TAG, "Got error initializing i2s: %d", err);
     event.type = TaskEventType::WARNING;
     event.err = err;
     xQueueSend(this_speaker->event_queue_, &event, 0);

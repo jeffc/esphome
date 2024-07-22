@@ -23,6 +23,7 @@ i2s_dac_mode_t = cg.global_ns.enum("i2s_dac_mode_t")
 
 CONF_MUTE_PIN = "mute_pin"
 CONF_DAC_TYPE = "dac_type"
+CONF_SAMPLE_RATE = "sample_rate"
 
 INTERNAL_DAC_OPTIONS = {
     "left": i2s_dac_mode_t.I2S_DAC_CHANNEL_LEFT_EN,
@@ -52,6 +53,7 @@ CONFIG_SCHEMA = cv.All(
                     cv.GenerateID(): cv.declare_id(I2SAudioSpeaker),
                     cv.GenerateID(CONF_I2S_AUDIO_ID): cv.use_id(I2SAudioComponent),
                     cv.Required(CONF_MODE): cv.enum(INTERNAL_DAC_OPTIONS, lower=True),
+                    cv.Optional(CONF_SAMPLE_RATE, default=16000) : cv.int_range(min=1),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
             "external": speaker.SPEAKER_SCHEMA.extend(
@@ -64,6 +66,7 @@ CONFIG_SCHEMA = cv.All(
                     cv.Optional(CONF_MODE, default="mono"): cv.one_of(
                         *EXTERNAL_DAC_OPTIONS, lower=True
                     ),
+                    cv.Optional(CONF_SAMPLE_RATE, default=16000) : cv.int_range(min=1),
                 }
             ).extend(cv.COMPONENT_SCHEMA),
         },
@@ -79,6 +82,8 @@ async def to_code(config):
     await speaker.register_speaker(var, config)
 
     await cg.register_parented(var, config[CONF_I2S_AUDIO_ID])
+
+    cg.add(var.set_sample_rate(config[CONF_SAMPLE_RATE]))
 
     if config[CONF_DAC_TYPE] == "internal":
         cg.add(var.set_internal_dac_mode(config[CONF_MODE]))

@@ -52,6 +52,7 @@
 #define USE_QR_CODE
 #define USE_SELECT
 #define USE_SENSOR
+#define USE_SNAPCAST
 #define USE_STATUS_LED
 #define USE_SWITCH
 #define USE_TEXT
